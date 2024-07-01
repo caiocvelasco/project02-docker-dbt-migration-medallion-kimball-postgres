@@ -1,0 +1,95 @@
+# Create a custom network for bridging the containers
+networks:
+  etl_network:
+    driver: bridge
+
+# Create the services, i.e., the containers with their specific services inside (postgres, python, jupyter)
+services:  
+  postgres:
+    image: postgres:16 # The postgres service is using the "postgres:16" (check in cmd: docker ps)
+    container_name: postgres
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data # This volume specifies the postgres storage path
+      #  - ~/.ssh:/root/.ssh  # Mount SSH directory into the container
+    networks:
+      - etl_network
+
+  # python:
+  #   restart: unless-stopped
+  #   build: # This 'build' tells docker-compose: don't just use the image, but build it from the Dockerfile
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   image: python # The python service is using a custom image named "python" (check in cmd: docker ps)
+  #   container_name: python
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - .:/workspace
+  #   #  - ~/.ssh:/root/.ssh  # Mount SSH directory into the container
+  #   working_dir: /workspace 
+  #   depends_on:
+  #     - postgres # Name of the service/image that is build before, generating dependency
+  #   stdin_open: true
+  #   tty: true
+  #   command: sleep infinity # Add this line to keep the container running
+  #   networks:
+  #     - etl_network
+
+  dbt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dbt
+    env_file:
+      - ./.env
+    volumes:
+      - .:/workspace
+      - ./.dbt:/root/.dbt  # Mount the local .dbt directory
+      #  - ~/.ssh:/root/.ssh
+    working_dir: /workspace
+    depends_on:
+      - postgres
+    command: sleep infinity  # Add this line to keep the container running
+    networks:
+      - etl_network
+          
+  jupyter_notebook:
+      image: jupyter/minimal-notebook
+      container_name: jupyter_notebook
+      restart: unless-stopped
+      env_file:
+        - ./.env
+      ports:
+        - "8888:8888"
+      volumes:
+        - .:/workspace
+        #  - ~/.ssh:/root/.ssh  # Mount SSH directory into the container
+      working_dir: /workspace # Explicitly set the working directory for the Jupyter Notebook service to /workspace. Thus, os.getcwd() should return /workspace when executed within the Jupyter Notebook environment.
+      depends_on:
+        - postgres
+        - dbt
+      networks:
+        - etl_network
+
+volumes:
+  pgdata:
+
+  # pgadmin:
+  #     image: dpage/pgadmin4
+  #     restart: unless-stopped
+  #     environment:
+  #       PGADMIN_DEFAULT_EMAIL: "admin@example.com"  # Change this to your desired email address
+  #       PGADMIN_DEFAULT_PASSWORD: "admin"   # Change this to your desired password
+  #     ports:
+  #       - "8080:80"  # Expose port 8080 on the host machine to access pgAdmin
+  #     depends_on:
+  #       - postgres
+
+  # Note: Since dbt can also run Python code, having a separate python service is redundant.
