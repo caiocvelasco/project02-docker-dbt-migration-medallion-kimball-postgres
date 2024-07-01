@@ -14,7 +14,7 @@ services:
     ports:
       - "5432:5432"
     expose:
-      - "5432"
+      - "5432" # This makes the PostgreSQL service accessible via localhost:5432 on your local machine. However, within the container environment, services will use the postgres hostname as specified. For example, for PowerBI, Since Docker exposes port 5432 of the PostgreSQL container to port 5432 on your host machine, you connect to localhost:5432 when using PowerBI Desktop on your local machine.
     volumes:
       - pgdata:/var/lib/postgresql/data # This volume specifies the postgres storage path
       #  - ~/.ssh:/root/.ssh  # Mount SSH directory into the container
@@ -52,10 +52,13 @@ services:
     volumes:
       - .:/workspace
       - ./.dbt:/root/.dbt  # Mount the local .dbt directory
+      - /var/run/docker.sock:/var/run/docker.sock  # Bind Docker socket to enable Docker commands within the container. This enable the "docke prune" command from devcontainer.json to work when rebuilding docker.
       #  - ~/.ssh:/root/.ssh
     working_dir: /workspace
     depends_on:
-      - postgres
+      - postgres # Name of the service/image that is build before, generating dependency
+    stdin_open: true # Allow an interactive terminal session
+    tty: true # Allow an interactive terminal session
     command: sleep infinity  # Add this line to keep the container running
     networks:
       - etl_network

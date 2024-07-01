@@ -9,7 +9,8 @@
     ],
     "settings": {
         "terminal.integrated.shell.linux": null
-    }
+    },
+    "postCreateCommand": "docker image prune -f"
 }
 
 // Using "service": "dbt" instead of "python"
