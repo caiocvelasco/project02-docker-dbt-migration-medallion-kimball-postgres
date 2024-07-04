@@ -1,0 +1,15 @@
+# Sources make it possible to name and describe the data loaded into your warehouse by your Extract and Load tools.
+# Here, you declare the tables you want as sources in dbt. 
+# When referencing them in the dbt models, make sure to use: SELECT ... FROM {{ source('source_name','table_name') }} 
+# https://docs.getdbt.com/docs/build/sources#using-sources
+
+sources:
+  - name: raw     # By default, dbt will use the source's 'name:' parameter as the schema name.
+    schema: raw   # This parameter is useful if you want to use a source name that differs from the schema name
+    tables:
+      - name: customers
+      - name: dates
+      - name: product_usage
+      - name: products
+      - name: subscriptions
+      - name: support_interactions
