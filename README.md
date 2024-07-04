@@ -132,11 +132,11 @@ The step-by-step migration will be done for one table in Bronze. Then, we need t
   * Make sure to add the CSV files to `external_ingestion/data`. This folder was create to mimic the EL (Extract + Load) work done in the EL part of the ELT paradigm followed by dbt.
   * Make sure the database connection is working by doing `dbt debug` in the Docker bash terminal.
 2) Run the `ingestion_in_raw.ipynb` file to mimic an external ingestion procedure into PostgreSQL (in the RAW schema).
-2) Configure your `profiles.yml`.
+3) Configure your `profiles.yml`.
   * `profiles.yml` is located under the `~/.dbt` folder and not in the dbt project folder.
   * Make sure your profiles.yml file is correctly set up.
   * This repo container the necessary information in `profiles.yml`.
-3) Organize your dbt project directory.
+4) Organize your dbt project directory.
   * `dbt_project.yml` file:
     * Under the `models > my_dbt_project` section, include all the layers (bronze, silver, gold) and the respective materialization. Recall that within the dbt models (sql files within the `models/` folder) you can override the materialization if you want.
   * `packages.yml` file:
@@ -149,8 +149,7 @@ The step-by-step migration will be done for one table in Bronze. Then, we need t
   * `models/` folder: 
     * Contains the dbt models (i.e., SQL scripts or *.sql files) for each layer (bronze, silver, gold) as separate subdirectories.
     * For each layer (e.g.: `models/bronze`) there is a `properties.yml` file. This file is where you specify data columns, tests, and any other property you want to ensure at each table in the schema. 
-    * `models/sources.yml`: Sources make it possible to name and describe the data loaded into your warehouse by your Extract-Load tool, i.e., the data from the CSV that was ingested into the RAW schema in PostgreSQL. When referencing these "source" tables in the dbt models, make sure to use the `{{ source('source_name','table_name') }}` jinja.
-# Here, you declare the tables you want as sources in dbt. 
+    * `models/sources.yml`: Sources make it possible to name and describe the data loaded into your warehouse by your Extract-Load tool, i.e., the data from the CSV that was ingested into the RAW schema in PostgreSQL. When referencing these "source" tables in the dbt models, make sure to use the `{{ source('source_name','table_name') }}` jinja. 
   * `macro/` folder:
     * Here you create macros to use in your project.
     * An example is the `macro/tests/date_format.sql`. I created this macro in a `test/` folder to ensure that the date columns have a date format.
